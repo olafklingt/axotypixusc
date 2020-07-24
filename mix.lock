@@ -1,0 +1,6 @@
+%{
+  "osc": {:hex, :osc, "0.1.2", "5d605f741a41742a2497e80e2b1054f0816982137ef5b046221c08494448e52b", [:mix], [], "hexpm", "8cdd8be5e266bf8d99602a7637d6526380d97f704ec600f32be1b4d71d78f4c8"},
+  "portmidi": {:git, "https://github.com/zenwerk/ex-portmidi.git", "95fd8f645d6d46e4ae1350c406ae3ba72ed14f07", []},
+  "supercollider": {:git, "https://github.com/olafklingt/elixsc", "fd960e50390e08d1b6fd3e6a0998f2fd9f5a2668", []},
+  "typed_struct": {:hex, :typed_struct, "0.2.1", "e1993414c371f09ff25231393b6430bd89d780e2a499ae3b2d2b00852f593d97", [:mix], [], "hexpm", "8f5218c35ec38262f627b2c522542f1eae41f625f92649c0af701a6fab2e11b3"},
+}
