@@ -2,20 +2,8 @@
 
 **TODO: Add description**
 
-## Installation
+the start of a example instrument using elixir and supercollider with a bad name so it will not get used.
+its quite bad right now
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `axotypixusc` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:axotypixusc, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/axotypixusc](https://hexdocs.pm/axotypixusc).
-
+use it with:
+mix deps.get; mix run
