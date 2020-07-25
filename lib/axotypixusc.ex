@@ -43,11 +43,44 @@ defmodule Axotypixusc do
     IO.puts("all midi devices:")
     IO.inspect(PortMidi.devices())
     IO.puts("////////////////////")
-    {:ok, input} = PortMidi.open(:input, "capture")
+    {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
     PortMidi.listen(input, self)
     go(default_group, List.duplicate(nil, 128))
     # some more stuff
     {:ok, self()}
+  end
+
+  def note_off(notes, note) do
+    s = Enum.at(notes, note)
+    SCSynth.set(s, ["gate", 0])
+    # IO.puts("note off: #{inspect(event)}")
+    List.replace_at(notes, note, nil)
+  end
+
+  def note_on(group, notes, note, vel) do
+    target_s = SCGroup.head(group)
+
+    if nil != Enum.at(notes, note) do
+      note_off(notes, note)
+    end
+
+    {:ok, synth} =
+      SCSynth.start_link(
+        target_s,
+        "pstr",
+        [
+          "freq",
+          :math.pow(2, (note - 69) / 12) * 440,
+          "amp",
+          vel / 127
+        ]
+        # ,
+        # :sync
+      )
+
+    notes = List.replace_at(notes, note, synth)
+    # IO.puts("notes #{inspect(notes)}")
+    notes
   end
 
   def go(group, notes \\ {}) do
@@ -63,34 +96,26 @@ defmodule Axotypixusc do
 
             # for {{type, note, vel}, 0} <- events do
 
-            IO.puts("notes #{inspect(notes)}")
-            IO.puts("notes #{type == 144}")
+            # IO.puts("notes #{inspect(notes)}")
+            # IO.puts("notes #{inspect(event)}")
 
-            case type do
-              144 ->
-                target_s = SCGroup.head(group)
+            case {type, note, vel} do
+              {128, _, _} ->
+                note_off(notes, note)
 
-                {:ok, synth} =
-                  SCSynth.start_link(
-                    target_s,
-                    "pstr",
-                    [
-                      "freq",
-                      :math.pow(2, (note - 69) / 12) * 440,
-                      "amp",
-                      vel / 127
-                    ]
-                    # , :sync
-                  )
+              {144, _, 0} ->
+                note_off(notes, note)
 
-                notes = List.replace_at(notes, note, synth)
-                IO.puts("notes #{inspect(notes)}")
+              {144, _, _} ->
+                note_on(group, notes, note, vel)
+
+              {176, 104, 0} ->
+                SCSoundServer.Interface.dumpTree(:sc0)
                 notes
 
-              128 ->
-                s = Enum.at(notes, note)
-                SCSynth.set(s, ["gate", 0])
-                notes = List.replace_at(notes, note, nil)
+              {_, _, _} ->
+                IO.puts("unmatched midi event: #{inspect(event)}")
+                notes
             end
           end)
 
