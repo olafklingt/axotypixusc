@@ -25,7 +25,7 @@ defmodule Axotypixusc do
     SCLang.eval("""
     SynthDef(\\pstr,{arg freq=600,amp=1,gate=1;
     var end=1-LagUD.ar(K2A.ar(gate),0,0.3);
-    var env=EnvGen.ar(Env.asr(0,amp,1),gate,doneAction:2);
+    var env=EnvGen.ar(Env.asr(0,amp,1),gate+Impulse.kr(0),doneAction:2);
     var sig=LeakDC.ar(LPF1.ar(Pluck.ar(BrownNoise.ar,100,1/freq,1/freq,100,(1/pi)-(end/3)),freq*2));Out.ar(0,sig*env!2)
     }).send;
     """)
@@ -43,10 +43,22 @@ defmodule Axotypixusc do
     IO.puts("all midi devices:")
     IO.inspect(PortMidi.devices())
     IO.puts("////////////////////")
-    {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
+    # {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
+    {:ok, input} = PortMidi.open(:input, "capture")
     PortMidi.listen(input, self)
+
+    # notes = List.duplicate(nil, 128)
+    # notes = note_on(default_group, notes, 72, 127)
+    # notes = note_on(default_group, notes, 73, 127)
+    # SCSoundServer.Interface.dumpTree(:sc0)
+    # notes = note_off(notes, 72)
+    # notes = note_off(notes, 73)
+    # :timer.sleep(1000)
+    # SCSoundServer.Interface.dumpTree(:sc0)
+    # :timer.sleep(5000)
+    # SCSoundServer.Interface.dumpTree(:sc0)
+
     go(default_group, List.duplicate(nil, 128))
-    # some more stuff
     {:ok, self()}
   end
 
