@@ -7,36 +7,33 @@ defmodule Axotypixusc do
   def startup_sc do
     # {:ok, s} = SCSoundServer.start_link(:sc3_server, '127.0.0.1', 57110, 5000, 1_000_000, 10)
     {:ok, s} = SCSoundServer.start_link(:sc0)
-    soundserver_udp_port = SCSoundServer.Interface.state(:sc0).udp_port
+    soundserver_udp_port = SCSoundServer.get_udp_port(:sc0)
 
     {:ok, l} = SCLang.start_link()
-    :timer.sleep(2000)
 
-    SCLang.eval(
-      "s=Server.remote(\\a, NetAddr(\"127.0.0.1\", #{soundserver_udp_port}), s.options, 1)"
+    SCLang.eval_sync(
+      "s=Server.remote(\\a, NetAddr(\"127.0.0.1\", #{soundserver_udp_port}), s.options, 1);"
     )
 
-    :timer.sleep(1000)
+    # :timer.sleep(1000)
 
     %{server: s, lang: l}
   end
 
   def load_synth do
-    SCLang.eval("""
+    SCLang.eval_sync("""
     SynthDef(\\pstr,{arg freq=600,amp=1,gate=1;
     var end=1-LagUD.ar(K2A.ar(gate),0,0.3);
     var env=EnvGen.ar(Env.asr(0,amp,1),gate+Impulse.kr(0),doneAction:2);
     var sig=LeakDC.ar(LPF1.ar(Pluck.ar(BrownNoise.ar,100,1/freq,1/freq,100,(1/pi)-(end/3)),freq*2));Out.ar(0,sig*env!2)
     }).send;
     """)
-
-    :timer.sleep(1000)
   end
 
   def start(_type, _args) do
     IO.puts("starting")
 
-    %{server: s, lang: l} = startup_sc
+    %{server: s, lang: l} = startup_sc()
     load_synth()
     default_group = SCSoundServer.init_default_group(:sc0)
 
@@ -50,13 +47,13 @@ defmodule Axotypixusc do
     # notes = List.duplicate(nil, 128)
     # notes = note_on(default_group, notes, 72, 127)
     # notes = note_on(default_group, notes, 73, 127)
-    # SCSoundServer.Interface.dumpTree(:sc0)
+    # SCSoundServer.dumpTree(:sc0)
     # notes = note_off(notes, 72)
     # notes = note_off(notes, 73)
     # :timer.sleep(1000)
-    # SCSoundServer.Interface.dumpTree(:sc0)
+    # SCSoundServer.dumpTree(:sc0)
     # :timer.sleep(5000)
-    # SCSoundServer.Interface.dumpTree(:sc0)
+    # SCSoundServer.dumpTree(:sc0)
 
     go(default_group, List.duplicate(nil, 128))
     {:ok, self()}
@@ -122,7 +119,7 @@ defmodule Axotypixusc do
                 note_on(group, notes, note, vel)
 
               {176, 104, 0} ->
-                SCSoundServer.Interface.dumpTree(:sc0)
+                SCSoundServer.dumpTree(:sc0)
                 notes
 
               {_, _, _} ->
