@@ -16,7 +16,7 @@ defmodule Axotypixusc.MixProject do
     [
       mod: {Axotypixusc, []},
       extra_applications: [:logger],
-      applications: [:portmidi]
+      applications: [:portmidi, :gproc]
     ]
   end
 

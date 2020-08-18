@@ -40,8 +40,8 @@ defmodule Axotypixusc do
     IO.puts("all midi devices:")
     IO.inspect(PortMidi.devices())
     IO.puts("////////////////////")
-    # {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
-    {:ok, input} = PortMidi.open(:input, "capture")
+    {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
+    # {:ok, input} = PortMidi.open(:input, "capture")
     PortMidi.listen(input, self)
 
     # notes = List.duplicate(nil, 128)
