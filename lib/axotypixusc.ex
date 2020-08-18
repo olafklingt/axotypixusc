@@ -79,7 +79,8 @@ defmodule Axotypixusc do
         "pstr",
         [
           "freq",
-          :math.pow(2, (note - 69) / 12) * 440,
+          # because A = 450 is heaven
+          :math.pow(2, (note - 69) / 12) * 450,
           "amp",
           vel / 127
         ]
