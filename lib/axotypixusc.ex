@@ -1,3 +1,6 @@
+# road map
+# 1) gui
+
 defmodule MidiIn do
   use GenServer
 
@@ -27,7 +30,7 @@ defmodule MidiIn do
           vel / 127
         ]
         # ,
-        # :sync
+        # true
       )
 
     notes = List.replace_at(notes, note, synth)
@@ -81,6 +84,8 @@ end
 defmodule Axotypixusc do
   use Application
 
+  @midi_in_device Application.get_env(:axotypixusc, :midi_in_device, nil)
+
   @moduledoc """
   Documentation for `Axotypixusc`.
   """
@@ -95,8 +100,6 @@ defmodule Axotypixusc do
       "s=Server.remote(\\a, NetAddr(\"127.0.0.1\", #{soundserver_udp_port}), s.options, 1);"
     )
 
-    # :timer.sleep(1000)
-
     %{server: s, lang: l}
   end
 
@@ -104,31 +107,36 @@ defmodule Axotypixusc do
     SCLang.eval_sync("""
     SynthDef(\\pstr,{arg freq=600,amp=1,gate=1;
     var end=1-LagUD.ar(K2A.ar(gate),0,0.3);
+    var fs=freq*Rand([1,1,1],1.005);
     var env=EnvGen.ar(Env.asr(0,amp,1),gate+Impulse.kr(0),doneAction:2);
-    var sig=LeakDC.ar(LPF1.ar(Pluck.ar(BrownNoise.ar,100,1/freq,1/freq,100,(1/pi)-(end/3)),freq*2));Out.ar(0,sig*env!2)
+    var sig=LeakDC.ar(LPF1.ar(Pluck.ar(BrownNoise.ar,100,1/fs,1/fs,100,(1/pi)-(end/3)),fs*2));
+    Out.ar(0,sig*1/3*env!2)
     }).send;
     """)
   end
 
   def start(_type, _args) do
-    IO.puts("starting")
-
     %{server: s, lang: l} = startup_sc()
     load_synth()
     default_group = SCSoundServer.init_default_group(:sc0)
 
-    IO.puts("all midi devices:")
-    IO.inspect(PortMidi.devices())
+    IO.puts("all midi input devices:")
+    IO.inspect(PortMidi.devices().input)
     IO.puts("////////////////////")
 
-    {:ok, input} = PortMidi.open(:input, "Launchpad MIDI 1")
-
-    # {:ok, input} = PortMidi.open(:input, "capture")
-
     {:ok, mi} = MidiIn.start_link(default_group)
-    IO.puts("#{inspect(mi)}")
 
-    PortMidi.listen(input, mi)
+    IO.inspect(PortMidi.devices().input)
+
+    if(@midi_in_device == nil) do
+      for x <- PortMidi.devices().input do
+        {:ok, input} = PortMidi.open(:input, x.name)
+        PortMidi.listen(input, mi)
+      end
+    else
+      {:ok, input} = PortMidi.open(:input, @midi_in_device)
+      PortMidi.listen(input, mi)
+    end
 
     {:ok, self()}
   end
