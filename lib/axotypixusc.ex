@@ -100,8 +100,8 @@ defmodule Axotypixusc do
     #   coef: 0.31
     # }
 
-    lpf = %BOp{selector: :*, a: freq, b: 2}
-    lp = %LPF1.Ar{in: plucks, freq: lpf}
+    lpf = %BOp{selector: :*, a: freq, b: 4}
+    lp = %LPF.Ar{in: plucks, freq: lpf}
     sig = %LeakDC.Ar{in: lp}
     es = %BOp{selector: :*, a: sig, b: env}
     out = %Out.Ar{bus: 0, channelsArray: [es, es]}
