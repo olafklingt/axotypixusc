@@ -27,8 +27,10 @@ defmodule Axotypixusc.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       # {:portmidi, git: "https://github.com/zenwerk/ex-portmidi.git", override: true},
       {:portmidi, git: "https://github.com/Kovak/ex-portmidi", override: true},
-      # {:elixsc, git: "https://github.com/olafklingt/elixsc", override: true}
-      {:elixsc, path: "../kv/lib/elixsc/", override: true}
+      # {:sc_ex_scsynth, git: "https://github.com/olafklingt/sc_ex_scsynth"}
+      # {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"}
+      {:sc_ex_scsynth, path: "../../github/sc_ex_scsynth/"},
+      {:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"}
     ]
   end
 end

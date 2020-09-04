@@ -1,5 +1,9 @@
 # road map
 # 1) gui
+# 3) proper termination
+# so i learned now that the midi in crshes if i stop the server ... 
+# so if the server stops midi in should be stopped too
+# for this I need some kind of supervision tree I guess...
 # 2) ugen functions that allow option strings so that one can mix parameter names
 
 defmodule Axotypixusc do
