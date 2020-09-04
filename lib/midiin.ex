@@ -22,6 +22,12 @@ defmodule MidiIn do
           "freq",
           # because A = 450 is heaven
           # :math.pow(2, (note - 69) / 12) * 450,
+          # try:
+          # c1 e1 gis1 h1 dis2 dis2
+          # g2 g2 g2 dis2
+          # g2 g2 g2 dis2
+          # h1 h1 h1 gis1 gis1
+          # e1 e1 e1 c1
           :math.pow(2, (note - 69) / 24) * 450,
           "amp",
           vel / 127
