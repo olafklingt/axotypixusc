@@ -2,7 +2,7 @@ import Config
 
 config :portmidi,
   buffer_size: 1024,
-  input_poll_sleep: 1
+  input_poll_sleep: 100
 
 # config :axotypixusc,
 # midi_in_device: "Launchpad MIDI 1"

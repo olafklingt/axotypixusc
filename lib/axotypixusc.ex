@@ -1,7 +1,7 @@
 # road map
 # 1) gui
 # 3) proper termination
-# so i learned now that the midi in crshes if i stop the server ... 
+# so i learned now that the midi in crshes if i stop the server ...
 # so if the server stops midi in should be stopped too
 # for this I need some kind of supervision tree I guess...
 # 2) ugen functions that allow option strings so that one can mix parameter names
@@ -13,7 +13,7 @@ defmodule Axotypixusc do
 
   def start_soundserver do
     # {:ok, s} = SCSoundServer.start_link(:sc3_server, '127.0.0.1', 57110, 5000, 1_000_000, 10)
-    {:ok, s} = SCSoundServer.start_link(:sc0)
+    {:ok, s} = SCSoundServer.GenServer.start_link(:sc0)
     s
   end
 
