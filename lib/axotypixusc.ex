@@ -13,7 +13,7 @@ defmodule Axotypixusc do
 
   def start_soundserver do
     # {:ok, s} = SCSoundServer.start_link(:sc3_server, '127.0.0.1', 57110, 5000, 1_000_000, 10)
-    {:ok, s} = SCSoundServer.GenServer.start_link(:sc0)
+    {:ok, s} = SCSoundServer.GenServer.start_link()
     s
   end
 
@@ -88,13 +88,13 @@ defmodule Axotypixusc do
     # def = SCSynthDef.Maker.add_ugen(def, SendTrig.kr(Impulse.kr(1), -1, rf))
     IO.inspect(def)
     bytes = SCSynthDef.Writer.byte_encode(def)
-    SCSoundServer.send_synthdef_sync(:sc0, bytes)
+    SCSoundServer.send_synthdef_sync(bytes)
   end
 
   def start(_type, _args) do
     s = start_soundserver()
+    default_group = SCSoundServer.init_default_group()
     make_synth()
-    default_group = SCSoundServer.init_default_group(:sc0)
 
     IO.puts("all midi input devices:")
     IO.inspect(PortMidi.devices().input)

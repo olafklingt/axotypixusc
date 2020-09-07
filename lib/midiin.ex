@@ -74,7 +74,7 @@ defmodule MidiIn do
             note_on(group, notes, note, vel)
 
           {176, 104, 0} ->
-            SCSoundServer.dumpTree(:sc0)
+            SCSoundServer.dumpTree()
             notes
 
           {176, 104, _} ->
