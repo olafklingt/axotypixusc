@@ -1,21 +1,16 @@
 # road map
 # 1) gui
-# 3) proper termination
+# 2) proper termination
 # so i learned now that the midi in crshes if i stop the server ...
 # so if the server stops midi in should be stopped too
 # for this I need some kind of supervision tree I guess...
-# 2) ugen functions that allow option strings so that one can mix parameter names
+# 3) ugen functions that allow option strings so that one can mix parameter names
+# 4) specs for ugens
 
 defmodule Axotypixusc do
   use Application
 
-  @midi_in_device Application.get_env(:axotypixusc, :midi_in_device, nil)
-
-  def start_soundserver do
-    # {:ok, s} = SCSoundServer.start_link(:sc3_server, '127.0.0.1', 57110, 5000, 1_000_000, 10)
-    {:ok, s} = SCSoundServer.GenServer.start_link()
-    s
-  end
+  @midi_in_device Application.get_env(:axotypixusc, :midi_in_device, :all)
 
   def make_synth do
     def = %SCSynthDef{name: "pstr"}
@@ -92,28 +87,22 @@ defmodule Axotypixusc do
   end
 
   def start(_type, _args) do
-    s = start_soundserver()
+    {:ok, s} = SCSoundServer.GenServer.start_link()
     default_group = SCSoundServer.init_default_group()
     make_synth()
 
-    IO.puts("all midi input devices:")
-    IO.inspect(PortMidi.devices().input)
-    IO.puts("////////////////////")
+    try do
+      IO.puts("all mstart_linkidi input devices:")
+      IO.inspect(PortMidi.devices().input)
+      IO.puts("////////////////////")
 
-    {:ok, mi} = MidiIn.start_link(default_group)
+      {:ok, mi} = Axotypixusc.Midi.Listener.start_link(default_group, @midi_in_device)
 
-    IO.inspect(PortMidi.devices().input)
-
-    if(@midi_in_device == nil) do
-      for x <- PortMidi.devices().input do
-        {:ok, input} = PortMidi.open(:input, x.name)
-        PortMidi.listen(input, mi)
-      end
-    else
-      {:ok, input} = PortMidi.open(:input, @midi_in_device)
-      PortMidi.listen(input, mi)
+      {:ok, self()}
+    rescue
+      _ ->
+        IO.puts("can not get midi input devices for print")
+        {:error, self()}
     end
-
-    {:ok, self()}
   end
 end

@@ -1,5 +1,29 @@
-defmodule MidiIn do
+defmodule Axotypixusc.Midi.Listener do
   use GenServer
+  use Bitwise
+  @spec init_midi_input(pid, atom | binary) :: any
+  def init_midi_input(mi, :all) do
+    i =
+      try do
+        PortMidi.devices().input
+      rescue
+        _ ->
+          IO.puts("could not get midi input devices")
+          []
+      end
+
+    for x <- i do
+      {:ok, input} = PortMidi.open(:input, x.name)
+      PortMidi.listen(input, mi)
+    end
+
+    {:ok}
+  end
+
+  def init_midi_input(mi, mid) do
+    {:ok, input} = PortMidi.open(:input, mid)
+    PortMidi.listen(input, mi)
+  end
 
   def note_off(notes, note) do
     s = Enum.at(notes, note)
@@ -40,8 +64,10 @@ defmodule MidiIn do
     notes
   end
 
-  def start_link(default_group) do
-    GenServer.start_link(__MODULE__, [default_group], name: :midiin)
+  def start_link(default_group, midi_in_device) do
+    {:ok, mi} = GenServer.start_link(__MODULE__, [default_group], name: :midiin)
+    init_midi_input(mi, midi_in_device)
+    {:ok, mi}
   end
 
   @impl true
@@ -56,31 +82,34 @@ defmodule MidiIn do
     notes =
       Enum.reduce(msg, state.notes, fn event, notes ->
         {{type, note, vel}, _time?} = event
+        chan = rem(type, 16)
+        msgtype = type >>> 4
+        IO.inspect({type, msgtype, chan, note, vel})
 
-        case {type, note, vel} do
-          {128, _, _} ->
-            note_off(notes, note)
-
-          {144, _, 0} ->
-            note_off(notes, note)
-
-          {153, _, _} ->
-            note_on(group, notes, note, vel)
-
-          {137, _, 0} ->
-            note_off(notes, note)
-
-          {144, _, _} ->
-            note_on(group, notes, note, vel)
-
-          {176, 104, 0} ->
+        case {msgtype, chan, note, vel} do
+          {9, _, 127, _} ->
             SCSoundServer.dumpTree()
             notes
 
-          {176, 104, _} ->
+          {9, _, 57, _} ->
+            SCSoundServer.quit()
             notes
 
-          {_, _, _} ->
+          {8, _, _, _} ->
+            note_off(notes, note)
+
+          {9, _, _, 0} ->
+            note_off(notes, note)
+
+          {9, _, _, _} ->
+            note_on(group, notes, note, vel)
+
+          {176, _, 104, 0} ->
+            # todo update for chan
+            SCSoundServer.dumpTree()
+            notes
+
+          {_, _, _, _} ->
             IO.puts("unmatched midi event: #{inspect(event)}")
             notes
         end
