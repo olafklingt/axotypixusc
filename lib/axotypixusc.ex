@@ -21,21 +21,14 @@ defmodule Axotypixusc do
 
     input_pids =
       for x <- i do
-        IO.puts("midi input: #{inspect(x)}")
-
         if(x.opened > 0) do
           IO.puts("midi init will fail because midi port allready open #{inspect(x.name)}")
         end
 
-        # {:ok, input} = PortMidi.close(:input, x.name)
         r = PortMidi.open(:input, x.name)
-        IO.puts("midi input: #{inspect(r)}")
         {:ok, input} = r
-        IO.puts("midi input: #{inspect(input)}")
         input
       end
-
-    IO.puts("midi input: #{inspect(input_pids)}")
 
     input_pids
   end
@@ -122,9 +115,7 @@ defmodule Axotypixusc do
 
   def setup_soundserver(config) do
     {:ok, gs} = SCSoundServer.GenServer.start_link(config)
-    IO.puts("scssgs: #{inspect(gs)}")
     Axotypixusc.make_synth()
-    IO.puts("post synth")
     {:ok, gs}
   end
 
@@ -137,7 +128,7 @@ defmodule Axotypixusc do
     ]
 
     opts = [strategy: :one_for_one, name: SCSoundServer.Supervisor]
-    sv = Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, opts)
 
     try do
       IO.puts("all midi input devices:")
@@ -161,7 +152,7 @@ defmodule Axotypixusc do
     ]
 
     opts = [strategy: :one_for_one, name: Midi.Supervisor]
-    sv = Supervisor.start_link(children, opts)
+    Supervisor.start_link(children, opts)
 
     {:ok, self()}
   end

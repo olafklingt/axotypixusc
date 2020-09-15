@@ -5,7 +5,6 @@ defmodule Axotypixusc.Midi.Listener do
   @spec note_off(any, integer) :: any
   def note_off(notes, note) do
     synth_id = Enum.at(notes, note)
-    # SCSynth.set(s, ["gate", 0.0])
     SCSoundServer.set(synth_id, ["gate", 0.0])
     List.replace_at(notes, note, nil)
   end
@@ -18,20 +17,20 @@ defmodule Axotypixusc.Midi.Listener do
 
     nid = SCSoundServer.get_next_node_id()
 
-    synth_id =
-      SCSoundServer.start_synth_async(
-        "pstr",
-        [
-          "freq",
-          :math.pow(2, (note - 69) / 24) * 440,
-          "amp",
-          vel / 127
-        ],
-        nid,
-        0,
-        # group_id
-        0
-      )
+    # synth_id =
+    SCSoundServer.start_synth_async(
+      "pstr",
+      [
+        "freq",
+        :math.pow(2, (note - 69) / 24) * 440,
+        "amp",
+        vel / 127
+      ],
+      nid,
+      0,
+      # group_id
+      group_id
+    )
 
     # {:ok, synth} =
     #   SCSynth.start_link(
@@ -116,6 +115,7 @@ defmodule Axotypixusc.Midi.Listener do
     {:noreply, %{state | notes: notes}}
   end
 
+  @impl true
   def terminate(reason, state) do
     IO.puts("midi in terminate #{inspect(reason)}")
     IO.puts("midi in terminate #{inspect(state)}")
