@@ -34,7 +34,8 @@ defmodule Axotypixusc.MixProject do
       # {:portmidi, git: "https://github.com/Kovak/ex-portmidi", override: true},
       # {:sc_ex_scsynth, git: "https://github.com/olafklingt/sc_ex_scsynth"}
       # {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"}
-      {:sc_ex_scsynth, path: "../../github/sc_ex_scsynth/"},
+      # {:sc_ex_scsynth, path: "../../github/sc_ex_scsynth/"},
+      {:sc_ex_scsoundserver, path: "../../github/sc_ex_scsoundserver/"},
       {:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"},
       {:portmidi, path: "../../github/ex-portmidi/"}
     ]

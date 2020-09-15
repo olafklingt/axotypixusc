@@ -1,90 +1,88 @@
 defmodule Axotypixusc.Midi.Listener do
   use GenServer
   use Bitwise
-  @spec init_midi_input(pid, atom | binary) :: any
-  def init_midi_input(mi, :all) do
-    i =
-      try do
-        PortMidi.devices().input
-      rescue
-        _ ->
-          IO.puts("could not get midi input devices")
-          []
-      end
 
-    for x <- i do
-      {:ok, input} = PortMidi.open(:input, x.name)
-      PortMidi.listen(input, mi)
-    end
-
-    {:ok}
-  end
-
-  def init_midi_input(mi, mid) do
-    {:ok, input} = PortMidi.open(:input, mid)
-    PortMidi.listen(input, mi)
-  end
-
+  @spec note_off(any, integer) :: any
   def note_off(notes, note) do
-    s = Enum.at(notes, note)
-    SCSynth.set(s, ["gate", 0.0])
+    synth_id = Enum.at(notes, note)
+    # SCSynth.set(s, ["gate", 0.0])
+    SCSoundServer.set(synth_id, ["gate", 0.0])
     List.replace_at(notes, note, nil)
   end
 
-  def note_on(group, notes, note, vel) do
-    target_s = SCGroup.head(group)
-
+  @spec note_on(SCNode.Config.t(), any, integer, integer) :: any
+  def note_on(group_id, notes, note, vel) do
     if nil != Enum.at(notes, note) do
       note_off(notes, note)
     end
 
-    {:ok, synth} =
-      SCSynth.start_link(
-        target_s,
+    nid = SCSoundServer.get_next_node_id()
+
+    synth_id =
+      SCSoundServer.start_synth_async(
         "pstr",
         [
           "freq",
-          # because A = 450 is heaven
-          # :math.pow(2, (note - 69) / 12) * 450,
-          # try:
-          # c1 e1 gis1 h1 dis2 dis2
-          # g2 g2 g2 dis2
-          # g2 g2 g2 dis2
-          # h1 h1 h1 gis1 gis1
-          # e1 e1 e1 c1
-          :math.pow(2, (note - 69) / 24) * 450,
+          :math.pow(2, (note - 69) / 24) * 440,
           "amp",
           vel / 127
-        ]
-        # ,
-        # true
+        ],
+        nid,
+        0,
+        # group_id
+        0
       )
 
-    notes = List.replace_at(notes, note, synth)
+    # {:ok, synth} =
+    #   SCSynth.start_link(
+    #     target_s,
+    #     "pstr",
+    #     [
+    #       "freq",
+    #       # because A = 450 is heaven
+    #       # :math.pow(2, (note - 69) / 12) * 450,
+    #       # try:
+    #       # c1 e1 gis1 h1 dis2 dis2
+    #       # g2 g2 g2 dis2
+    #       # g2 g2 g2 dis2
+    #       # h1 h1 h1 gis1 gis1
+    #       # e1 e1 e1 c1
+    #       :math.pow(2, (note - 69) / 24) * 450,
+    #       "amp",
+    #       vel / 127
+    #     ],
+    #     :async
+    #   )
+
+    notes = List.replace_at(notes, note, nid)
     notes
   end
 
-  def start_link(default_group, midi_in_device) do
-    {:ok, mi} = GenServer.start_link(__MODULE__, [default_group], name: :midiin)
-    init_midi_input(mi, midi_in_device)
+  @spec start_link(any) :: any
+  def start_link(input_pids) do
+    node_id = 0
+    {:ok, mi} = GenServer.start_link(__MODULE__, {node_id, input_pids}, name: :midiin)
     {:ok, mi}
   end
 
   @impl true
-  def init([default_group]) do
-    {:ok, %{group: default_group, notes: List.duplicate(nil, 128)}}
+  def init({node_id, input_pids}) do
+    Process.flag(:trap_exit, true)
+
+    for x <- input_pids do
+      PortMidi.listen(x, self())
+    end
+
+    {:ok, %{node_id: node_id, notes: List.duplicate(nil, 128), input_pids: input_pids}}
   end
 
   @impl true
   def handle_info({_pid, msg}, state) do
-    group = state.group
-
     notes =
       Enum.reduce(msg, state.notes, fn event, notes ->
         {{type, note, vel}, _time?} = event
         chan = rem(type, 16)
         msgtype = type >>> 4
-        IO.inspect({type, msgtype, chan, note, vel})
 
         case {msgtype, chan, note, vel} do
           {9, _, 127, _} ->
@@ -102,7 +100,7 @@ defmodule Axotypixusc.Midi.Listener do
             note_off(notes, note)
 
           {9, _, _, _} ->
-            note_on(group, notes, note, vel)
+            note_on(state.node_id, notes, note, vel)
 
           {176, _, 104, 0} ->
             # todo update for chan
@@ -116,5 +114,10 @@ defmodule Axotypixusc.Midi.Listener do
       end)
 
     {:noreply, %{state | notes: notes}}
+  end
+
+  def terminate(reason, state) do
+    IO.puts("midi in terminate #{inspect(reason)}")
+    IO.puts("midi in terminate #{inspect(state)}")
   end
 end
