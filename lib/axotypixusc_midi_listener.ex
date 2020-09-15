@@ -9,7 +9,7 @@ defmodule Axotypixusc.Midi.Listener do
     List.replace_at(notes, note, nil)
   end
 
-  @spec note_on(SCNode.Config.t(), any, integer, integer) :: any
+  @spec note_on(non_neg_integer, any, integer, integer) :: any
   def note_on(group_id, notes, note, vel) do
     if nil != Enum.at(notes, note) do
       note_off(notes, note)
@@ -17,7 +17,6 @@ defmodule Axotypixusc.Midi.Listener do
 
     nid = SCSoundServer.get_next_node_id()
 
-    # synth_id =
     SCSoundServer.start_synth_async(
       "pstr",
       [

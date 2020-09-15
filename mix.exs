@@ -8,7 +8,7 @@ defmodule Axotypixusc.MixProject do
       elixir: "~> 1.10",
       dialyzer: [
         plt_add_deps: :apps_direct,
-        plt_add_apps: [:sc_ex_scsynth, :sc_ex_synthdef]
+        plt_add_apps: [:sc_ex_scsoundserver, :sc_ex_synthdef]
       ],
       start_permanent: Mix.env() == :prod,
       deps: deps()
