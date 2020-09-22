@@ -8,7 +8,7 @@ defmodule Axotypixusc.MixProject do
       elixir: "~> 1.10",
       dialyzer: [
         plt_add_deps: :apps_direct,
-        plt_add_apps: [:sc_ex_scsoundserver, :sc_ex_synthdef]
+        plt_add_apps: [:sc_ex_scsoundserver, :sc_ex_synthdef, :sc_ex_lib]
       ],
       start_permanent: Mix.env() == :prod,
       deps: deps()
@@ -28,12 +28,13 @@ defmodule Axotypixusc.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:portmidi, git: "https://github.com/olafklingt/ex-portmidi"},
-      {:sc_ex_scsoundserver, git: "https://github.com/olafklingt/sc_ex_scsoundserver"},
-      {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"}
-      # {:sc_ex_scsoundserver, path: "../../github/sc_ex_scsoundserver/"},
-      # {:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"},
-      # {:portmidi, path: "../../github/ex-portmidi/"}
+      # {:portmidi, git: "https://github.com/olafklingt/ex-portmidi"},
+      # {:sc_ex_scsoundserver, git: "https://github.com/olafklingt/sc_ex_scsoundserver"},
+      # {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"}
+      {:sc_ex_scsoundserver, path: "../../github/sc_ex_scsoundserver/"},
+      {:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"},
+      {:sc_ex_lib, path: "../../github/sc_ex_lib/"},
+      {:portmidi, path: "../../github/ex-portmidi/"}
     ]
   end
 end

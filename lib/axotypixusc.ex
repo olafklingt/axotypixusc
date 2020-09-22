@@ -22,7 +22,7 @@ defmodule Axotypixusc do
     input_pids =
       for x <- i do
         if(x.opened > 0) do
-          IO.puts("midi init will fail because midi port allready open #{inspect(x.name)}")
+          IO.puts("midi init will fail because midi port already open #{inspect(x.name)}")
         end
 
         r = PortMidi.open(:input, x.name)
@@ -40,7 +40,9 @@ defmodule Axotypixusc do
   end
 
   def make_synth do
-    def = %SCSynthDef{name: "pstr"}
+    import UGen
+
+    # def = %SCSynthDef.Struct{name: "pstr"}
 
     # Control and UOp and BOp are nonstandard UGens
     # they do not support the variety of interfaces of normal ugens
@@ -48,39 +50,35 @@ defmodule Axotypixusc do
     freq = Control.kr(freq: 440.0)
     amp = Control.kr(amp: 1)
     gate = Control.kr(gate: 1)
-    rf = UOp.reciprocal(freq)
+    rf = reciprocal(freq)
 
-    # ugens can be created by a ar or kr or ir or new function (which is available depends on the implementation on the server)
+    # ugens can be created by a ar or kr function (which is available depends on the implementation on the server)
     env =
       Linen.kr(
         # (the impulse ensures that the env is triggered )
         # (even when the key is released within one processing block)
-        BOp.add(gate, Impulse.kr(0)),
+        add(gate, Impulse.kr(0)),
         0,
-        BOp.mul(amp, 0.3),
+        mul(amp, 0.3),
         0.5,
         2
       )
 
-    noise = %BrownNoise.Ar{}
+    noise = %UGen.BrownNoise.Ar{}
 
-    coef = %BOp{
-      selector: :+,
-      a: %Linen.Kr{gate: gate, attackTime: 0, susLevel: 0.3, releaseTime: 0.1},
-      b: 0.02
-    }
+    coef = add(%UGen.Linen.Kr{gate: gate, attackTime: 0, susLevel: 0.3, releaseTime: 0.1}, 0.02)
 
     plucks_list =
       Enum.reduce([1, 1.003, 1.005], [], fn rm, list ->
         r = Rand.new(1, rm)
-        t = BOp.mul(rf, r)
+        t = mul(rf, r)
 
         list ++
           [
             # one can also create the structs directly
             # the benefit are explicit keywords
             # i might implement functions with option lists later
-            %Pluck.Ar{
+            %UGen.Pluck.Ar{
               in: noise,
               trig: 100,
               maxdelaytime: t,
@@ -91,44 +89,44 @@ defmodule Axotypixusc do
           ]
       end)
 
-    # sum3 is also not a standard ugen ... should be implemented better
-    plucks = %Sum3.New{
-      in0: Enum.at(plucks_list, 0),
-      in1: Enum.at(plucks_list, 1),
-      in2: Enum.at(plucks_list, 2)
-    }
+    plucks = sum(plucks_list)
 
-    lpf = BOp.mul(freq, 4)
+    lpf = mul(freq, 4)
     lp = LPF.ar(plucks, lpf)
     sig = LeakDC.ar(lp)
-    es = BOp.mul(sig, env)
+    es = mul(sig, env)
     out = Out.ar(0, [es, es])
 
-    def = SCSynthDef.Maker.add_ugen(def, out)
-
+    # def = SCSynthDef.new("pstr")
+    # def = SCSynthDef.Maker.add_ugen(def, out)
     # if one wants to poll a value a seprate ugen has to be included after the ugen_graph has been added to the def
     # def = SCSynthDef.Maker.add_ugen(def, SendTrig.kr(Impulse.kr(1), -1, rf))
     # IO.inspect(def)
-    bytes = SCSynthDef.Writer.byte_encode(def)
-    SCSoundServer.send_synthdef_sync(bytes)
+    # bytes = SCSynthDef.Writer.byte_encode(def)
+    # IO.inspect(def.metadata)
+    # SCSoundServer.send_synthdef_sync(bytes)
+
+    SCSoundServer.add_def("pstr", out)
   end
 
   def setup_soundserver(config) do
-    {:ok, gs} = SCSoundServer.GenServer.start_link(config)
+    {:ok, gs} = SCSoundServer.start_link(config)
     Axotypixusc.make_synth()
     {:ok, gs}
   end
 
   def start(_type, _args) do
-    children = [
-      %{
-        id: SCSoundServer,
-        start: {Axotypixusc, :setup_soundserver, [%SCSoundServer.Config{}]}
-      }
-    ]
+    Axotypixusc.setup_soundserver(%SCSoundServer.Config{})
 
-    opts = [strategy: :one_for_one, name: SCSoundServer.Supervisor]
-    Supervisor.start_link(children, opts)
+    # children = [
+    #   %{
+    #     id: SCSoundServer,
+    #     start: {Axotypixusc, :setup_soundserver, [%SCSoundServer.Config{}]}
+    #   }
+    # ]
+    #
+    # opts = [strategy: :one_for_one, name: SCSoundServer.Supervisor]
+    # Supervisor.start_link(children, opts)
 
     try do
       IO.puts("all midi input devices:")

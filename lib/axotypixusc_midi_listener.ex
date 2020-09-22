@@ -21,9 +21,10 @@ defmodule Axotypixusc.Midi.Listener do
       "pstr",
       [
         "freq",
-        :math.pow(2, (note - 69) / 24) * 440,
-        "amp",
-        vel / 127
+        SuperCollider.midi_to_freq(note)
+        # :math.pow(2, (note - 69) / 24) * 440,
+        # "amp",
+        # vel / 127
       ],
       nid,
       0,
