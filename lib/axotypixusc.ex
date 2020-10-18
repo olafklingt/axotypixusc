@@ -106,7 +106,7 @@ defmodule Axotypixusc do
     # IO.inspect(def.metadata)
     # SCSoundServer.send_synthdef_sync(bytes)
 
-    SCSoundServer.add_def("pstr", out)
+    SCSynthDef.send_def_to_server("pstr", out)
   end
 
   def setup_soundserver(config) do
