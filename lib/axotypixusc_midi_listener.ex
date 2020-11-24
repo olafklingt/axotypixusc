@@ -10,7 +10,7 @@ defmodule Axotypixusc.Midi.Listener do
   end
 
   @spec note_on(non_neg_integer, any, integer, integer) :: any
-  def note_on(group_id, notes, note, vel) do
+  def note_on(group_id, notes, note, _vel) do
     if nil != Enum.at(notes, note) do
       note_off(notes, note)
     end

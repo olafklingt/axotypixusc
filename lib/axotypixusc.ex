@@ -116,17 +116,17 @@ defmodule Axotypixusc do
   end
 
   def start(_type, _args) do
-    Axotypixusc.setup_soundserver(%SCSoundServer.Config{})
+    # Axotypixusc.setup_soundserver(%SCSoundServer.Config{})
 
-    # children = [
-    #   %{
-    #     id: SCSoundServer,
-    #     start: {Axotypixusc, :setup_soundserver, [%SCSoundServer.Config{}]}
-    #   }
-    # ]
-    #
-    # opts = [strategy: :one_for_one, name: SCSoundServer.Supervisor]
-    # Supervisor.start_link(children, opts)
+    children = [
+      %{
+        id: SCSoundServer,
+        start: {Axotypixusc, :setup_soundserver, [%SCSoundServer.Config{}]}
+      }
+    ]
+
+    opts = [strategy: :one_for_one, name: SCSoundServer.Supervisor]
+    Supervisor.start_link(children, opts)
 
     try do
       IO.puts("all midi input devices:")
