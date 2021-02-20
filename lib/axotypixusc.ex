@@ -116,12 +116,14 @@ defmodule Axotypixusc do
   end
 
   def start(_type, _args) do
-    # Axotypixusc.setup_soundserver(%SCSoundServer.Config{})
+    # Axotypixusc.setup_soundserver(%SCSoundServer.Config{application: 'scsynth', protocol: :tcp})
 
     children = [
       %{
         id: SCSoundServer,
-        start: {Axotypixusc, :setup_soundserver, [%SCSoundServer.Config{}]}
+        start:
+          {Axotypixusc, :setup_soundserver,
+           [%SCSoundServer.Config{application: 'scsynth', protocol: :tcp}]}
       }
     ]
 
