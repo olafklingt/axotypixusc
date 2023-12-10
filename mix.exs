@@ -38,14 +38,16 @@ defmodule Axotypixusc.MixProject do
   def deps do
     [
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+
       {:portmidi, git: "https://github.com/olafklingt/ex-portmidi"},
       {:sc_ex_lib, git: "https://github.com/olafklingt/sc_ex_lib"},
-      {:sc_ex_scsoundserver, git: "https://github.com/olafklingt/sc_ex_scsoundserver"},
-      {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"}
-      # {:sc_ex_lib, path: "../../github/sc_ex_lib/"},
-      # {:sc_ex_scsoundserver, path: "../../github/sc_ex_scsoundserver/"},
-      # {:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"},
-      # {:portmidi, path: "../../github/ex-portmidi/"}
+      #{:sc_ex_scsoundserver, git: "https://github.com/olafklingt/sc_ex_scsoundserver"},
+      {:sc_ex_synthdef, git: "https://github.com/olafklingt/sc_ex_synthdef"},
+
+      #{:portmidi, path: "../../github/ex-portmidi/"},
+      #{:sc_ex_lib, path: "../../github/sc_ex_lib/"},
+      {:sc_ex_scsoundserver, path: "../sc_ex_scsoundserver/", override: true},
+      #{:sc_ex_synthdef, path: "../../github/sc_ex_synthdef/"}
     ]
   end
 end

@@ -1,7 +1,5 @@
 # road map
-# 2) gui
-# 3) ugen functions that allow option strings so that one can mix parameter names
-# 4) specs for ugens
+# 1) gui
 
 defmodule Axotypixusc do
   use Application
@@ -35,7 +33,6 @@ defmodule Axotypixusc do
 
   def init_midi_input(mid) do
     {:ok, input} = PortMidi.open(:input, mid)
-    # PortMidi.listen(input, mi)
     [input]
   end
 
@@ -69,7 +66,7 @@ defmodule Axotypixusc do
     coef = add(%UGen.Linen.Kr{gate: gate, attackTime: 0, susLevel: 0.3, releaseTime: 0.1}, 0.02)
 
     plucks_list =
-      Enum.reduce([1, 1.003, 1.005], [], fn rm, list ->
+      Enum.reduce([1, 1.0003, 1.0005], [], fn rm, list ->
         r = Rand.new(1, rm)
         t = mul(rf, r)
 
@@ -77,7 +74,6 @@ defmodule Axotypixusc do
           [
             # one can also create the structs directly
             # the benefit are explicit keywords
-            # i might implement functions with option lists later
             %UGen.Pluck.Ar{
               in: noise,
               trig: 100,
@@ -110,8 +106,12 @@ defmodule Axotypixusc do
   end
 
   def setup_soundserver(config) do
-    {:ok, gs} = SCSoundServer.start_link(config)
+    IO.inspect("setup_soundserver")
+    r = SCSoundServer.start_link(config)
+    IO.inspect(r)
+    {:ok, gs} = r
     Axotypixusc.make_synth()
+    IO.inspect("pms")
     {:ok, gs}
   end
 
@@ -123,7 +123,13 @@ defmodule Axotypixusc do
         id: SCSoundServer,
         start:
           {Axotypixusc, :setup_soundserver,
-           [%SCSoundServer.Config{application: 'scsynth', protocol: :tcp}]}
+           [%SCSoundServer.Config{
+		application: 'scsynth', 
+		protocol: :tcp,
+#		jack_out: 'sc',
+#		jack_in: 'sc'
+		}]}
+
       }
     ]
 

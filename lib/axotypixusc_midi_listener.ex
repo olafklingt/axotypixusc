@@ -1,6 +1,6 @@
 defmodule Axotypixusc.Midi.Listener do
   use GenServer
-  use Bitwise
+  import Bitwise
 
   @spec note_off(any, integer) :: any
   def note_off(notes, note) do
@@ -10,7 +10,7 @@ defmodule Axotypixusc.Midi.Listener do
   end
 
   @spec note_on(non_neg_integer, any, integer, integer) :: any
-  def note_on(group_id, notes, note, _vel) do
+  def note_on(group_id, notes, note, vel) do
     if nil != Enum.at(notes, note) do
       note_off(notes, note)
     end
@@ -21,10 +21,10 @@ defmodule Axotypixusc.Midi.Listener do
       "pstr",
       [
         "freq",
-        SuperCollider.midi_to_freq(note)
+        SuperCollider.midi_to_freq(note),
         # :math.pow(2, (note - 69) / 24) * 440,
-        # "amp",
-        # vel / 127
+        "amp",
+        vel / 127
       ],
       nid,
       0,
@@ -88,9 +88,9 @@ defmodule Axotypixusc.Midi.Listener do
             SCSoundServer.dumpTree()
             notes
 
-          {9, _, 57, _} ->
-            SCSoundServer.quit()
-            notes
+#          {9, _, 57, _} ->
+#            SCSoundServer.quit()
+#            notes
 
           {8, _, _, _} ->
             note_off(notes, note)
